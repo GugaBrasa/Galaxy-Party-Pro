@@ -31,7 +31,6 @@
           run: |
             echo "Risk level: ${{ inputs.risk_level }}"
             echo "Priority level: ${{ inputs.priority_level }}"
-            echo "Started at: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
 
     pre-deploy-checks:
       needs: assess-risk
@@ -69,5 +68,3 @@
             echo "Workflow finished"
             echo "Risk: ${{ inputs.risk_level }}"
             echo "Priority: ${{ inputs.priority_level }}"
-            echo "Status: ${{ job.status }}"
-            echo "Finished at: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"

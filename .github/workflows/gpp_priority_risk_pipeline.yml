@@ -1,0 +1,73 @@
+ name: GPP Priority-Risk Pipeline
+
+  on:
+    workflow_dispatch:
+      inputs:
+        risk_level:
+          description: "Risk Level (R1=Low, R2=Medium, R3=High)"
+          required: true
+          type: choice
+          options:
+            - R1
+            - R2
+            - R3
+        priority_level:
+          description: "Priority Level (P1=Critical, P2=High, P3=Medium,
+  P4=Low)"
+          required: false
+          default: P3
+          type: choice
+          options:
+            - P1
+            - P2
+            - P3
+            - P4
+
+  jobs:
+    assess-risk:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Log parameters
+          run: |
+            echo "Risk level: ${{ inputs.risk_level }}"
+            echo "Priority level: ${{ inputs.priority_level }}"
+            echo "Started at: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+
+    pre-deploy-checks:
+      needs: assess-risk
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
+        - name: Run pre-deploy checklist (if exists)
+          run: |
+            if [ -f "scripts/pre-deploy-checklist.sh" ]; then
+              bash scripts/pre-deploy-checklist.sh
+            else
+              echo "scripts/pre-deploy-checklist.sh not found, skipping."
+            fi
+
+    health-check:
+      needs: pre-deploy-checks
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
+        - name: Validate health endpoint file (if exists)
+          run: |
+            if [ -f "public/health.php" ]; then
+              php -l public/health.php
+            else
+              echo "public/health.php not found, skipping."
+            fi
+
+    report-status:
+      if: always()
+      needs: [assess-risk, pre-deploy-checks, health-check]
+      runs-on: ubuntu-latest
+      steps:
+        - name: Final report
+          run: |
+            echo "Workflow finished"
+            echo "Risk: ${{ inputs.risk_level }}"
+            echo "Priority: ${{ inputs.priority_level }}"
+            echo "Status: ${{ job.status }}"
+            echo "Finished at: $(date -u +'%Y-%m-%dT%H:%M:%SZ')"

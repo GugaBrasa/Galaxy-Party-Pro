@@ -1,19 +1,27 @@
- name: GPP Priority-Risk Pipeline
-  "on":
+name: GPP Priority-Risk Pipeline
+
+  on:
     workflow_dispatch:
       inputs:
         risk_level:
           description: "Risk Level (R1=Low, R2=Medium, R3=High)"
           required: true
           type: choice
-          options: [R1, R2, R3]
+          options:
+            - R1
+            - R2
+            - R3
         priority_level:
           description: "Priority Level (P1=Critical, P2=High, P3=Medium,
   P4=Low)"
           required: false
           default: P3
           type: choice
-          options: [P1, P2, P3, P4]
+          options:
+            - P1
+            - P2
+            - P3
+            - P4
 
   jobs:
     test:

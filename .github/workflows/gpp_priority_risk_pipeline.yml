@@ -1,3 +1,61 @@
+name: GPP Priority-Risk Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      risk_level:
+        description: "Risk level"
+        required: true
+        type: choice
+        options:
+          - R1
+          - R2
+          - R3
+      priority_level:
+        description: "Priority level"
+        required: true
+        type: choice
+        options:
+          - P1
+          - P2
+          - P3
+          - P4
+
+jobs:
+  assess-risk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Show inputs
+        run: |
+          echo "Risk: ${{ inputs.risk_level }}"
+          echo "Priority: ${{ inputs.priority_level }}"
+
+  pre-deploy-checks:
+    needs: assess-risk
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run checklist if present
+        run: |
+          if [ -f "scripts/pre-deploy-checklist.sh" ]; then
+            bash scripts/pre-deploy-checklist.sh
+          else
+            echo "Checklist not found, skipping."
+          fi
+
+  health-check:
+    needs: pre-deploy-checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate health file if present
+        run: |
+          if [ -f "public/health.php" ]; then
+            php -l public/health.php
+          else
+            echo "health.php not found, skipping."
+          fi
+
   report-status:
     if: always()
     needs:

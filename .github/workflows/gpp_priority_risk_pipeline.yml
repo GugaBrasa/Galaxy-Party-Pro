@@ -1,31 +1,13 @@
-name: GPP Priority-Risk Pipeline
-
-on:
-  workflow_dispatch:
-    inputs:
-      risk_level:
-        description: "Risk level"
-        required: true
-        type: choice
-        options:
-          - R1
-          - R2
-          - R3
-      priority_level:
-        description: "Priority level"
-        required: true
-        type: choice
-        options:
-          - P1
-          - P2
-          - P3
-          - P4
-
-jobs:
-  test:
+  report-status:
+    if: always()
+    needs:
+      - assess-risk
+      - pre-deploy-checks
+      - health-check
     runs-on: ubuntu-latest
     steps:
-      - name: Show inputs
+      - name: Final report
         run: |
+          echo "Workflow finished"
           echo "Risk: ${{ inputs.risk_level }}"
           echo "Priority: ${{ inputs.priority_level }}"
